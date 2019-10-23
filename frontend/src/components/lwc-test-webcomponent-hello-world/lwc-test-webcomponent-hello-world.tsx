@@ -40,14 +40,12 @@ export class HelloWorld implements LimeWebComponent {
 
 //Det är den här som anropas innan komponenten laddas.
 public componentWillLoad() {
-
     this.http = this.platform.get(PlatformServiceName.Http); 
    // this.state = this.platform.get(PlatformServiceName.LimeobjectsState);
     console.log("componentWillLoad");
      this.http.get(`https://localhost/lime/limepkg-sprint/test/?limetype=deal`).then(res => {
-        this.section = {res};
+        this.section = res.objects;
     });
-    
     this.hasLoaded = true;
 }
 
@@ -56,23 +54,34 @@ private async handleClick() {
    //let response =  this.http.get(`https://localhost/lime/limepkg-sprint/test/?limetype=deal`);
    
     //console.log(this.section);
-    this.render();
+   // this.render();
+
     console.log("section")
     console.log(this.section);
 }
     
     public render() {
     console.log("Render()");
-    let output  = [];
-     let array = []
-        
+    let output;
+    let array = []
      if(this.hasLoaded) {
-         array = Object.keys(this.section).map(el => this.section[el]);
+
+         array = Object.keys(this.section).map(el => {
+             return (this.section[el]);
+         });
+
+         console.log(this.section);
+         console.log("ARRAY");
+         console.log(array);
+         
+
          output = array.map(el => {
-           <div>
-                <p>{el.name}</p>
-                <p>{el.company}</p>
-            </div>
+             return(
+                 <limeel-flex-container justify={"space-around"} direction={"vertical"}>
+                     <p>{el.name}</p>
+                     <p>{el.company}</p>
+                </limeel-flex-container>
+               )
          }
         )
         console.log("output");
@@ -81,7 +90,7 @@ private async handleClick() {
     
         
         return (
-            <limel-flex-container align={'center'} direction={"horisontal"}>
+            <limel-flex-container align={'center'} direction={"vertical"}>
                 <limel-flex-container align={'center'} direction={"vertical"}>
                     <limel-button
                     label={"Detta är en knapp"}
