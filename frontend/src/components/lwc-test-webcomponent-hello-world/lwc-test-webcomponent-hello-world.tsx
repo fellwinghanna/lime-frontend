@@ -7,6 +7,7 @@ import {
     HttpService,
 } from '@limetech/lime-web-components-interfaces';
 import { Component, Element, h, Prop, State } from '@stencil/core';
+import { ListItem,ListSeparator } from '@limetech/lime-elements';
 
 @Component({
     tag: 'lwc-test-webcomponent-hello-world',
@@ -21,87 +22,70 @@ export class HelloWorld implements LimeWebComponent {
 
     @Prop()
     public context: LimeWebComponentContext;
-      
+
     @Element()
     public element: HTMLElement;
 
 
     @State()
-    private section: Object = [];
+    private section = [{
+        title: null,
+        priority: null,
+        misc: null,
+        solutionimprovementstatus: null,
+        isOpen:  false,
+    }];
+
 
     @State()
-    private hasLoaded = false;
+    private items: Array<ListItem<number> | ListSeparator> = [];
 
- 
+    @State()
+    private outputList: String;
 
- 
     private http: HttpService;
- 
-
-//Det är den här som anropas innan komponenten laddas.
-public componentWillLoad() {
-    this.http = this.platform.get(PlatformServiceName.Http); 
-   // this.state = this.platform.get(PlatformServiceName.LimeobjectsState);
-    console.log("componentWillLoad");
-     this.http.get(`https://localhost/lime/limepkg-sprint/test/?limetype=deal`).then(res => {
-        this.section = res.objects;
-    });
-    this.hasLoaded = true;
-}
 
 
-private async handleClick() {
-   //let response =  this.http.get(`https://localhost/lime/limepkg-sprint/test/?limetype=deal`);
-   
-    //console.log(this.section);
-   // this.render();
+    
+    public componentWillLoad() {
+        this.http = this.platform.get(PlatformServiceName.Http);
+        console.log("componentWillLoad");
+        this.http.get(`https://localhost/lime/limepkg-sprint/test/?limetype=solutionimprovement`).then(res => {
+            this.section = res.objects.map(el => {
+                return this.section = {...el};
+            });
+            this.createOutPut();
+        }
+        );
+    }
 
-    console.log("section")
-    console.log(this.section);
-}
+    private createOutPut() {
+        let index = 1;
+        this.section.forEach(element => {
+            this.items.push({
+                text: element.title,
+                secondaryText: "Status: " + element.solutionimprovementstatus,
+                value: index++,
+            },
+            {separator: true})
+            console.log(element);
+        }
+        )
+         this.outputList = <limel-list items={this.items}/>
+    }
+
     
     public render() {
-    console.log("Render()");
-    let output;
-    let array = []
-     if(this.hasLoaded) {
+        console.log("Render()");
+     
+        console.log(this.items);
 
-         array = Object.keys(this.section).map(el => {
-             return (this.section[el]);
-         });
 
-         console.log(this.section);
-         console.log("ARRAY");
-         console.log(array);
-         
-
-         output = array.map(el => {
-             return(
-                 <limeel-flex-container justify={"space-around"} direction={"vertical"}>
-                     <p>{el.name}</p>
-                     <p>{el.company}</p>
-                </limeel-flex-container>
-               )
-         }
-        )
-        console.log("output");
-        console.log( output);
-    }
-    
-        
         return (
-            <limel-flex-container align={'center'} direction={"vertical"}>
-                <limel-flex-container align={'center'} direction={"vertical"}>
-                    <limel-button
-                    label={"Detta är en knapp"}
-                    outlined={true}
-                    icon={'house_stark'}
-                    onClick={this.handleClick.bind(this)}
-                />
-                </limel-flex-container>
-                {output}
+            <limel-flex-container direction={"vertical"} align={"stretch"} justify={"space-around"}>
+                <limel-button label="click me" onClick={this.render} />
+                {this.outputList}
             </limel-flex-container>
-            
         );
     }
 }
