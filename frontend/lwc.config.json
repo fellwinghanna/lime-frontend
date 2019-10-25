@@ -5,6 +5,6 @@
     },
     {
         "name": "lwc-test-webcomponent-hello-world",
-        "slot": "dashboard"
+        "slot": "object.card.head.panels"
     }
 ]
