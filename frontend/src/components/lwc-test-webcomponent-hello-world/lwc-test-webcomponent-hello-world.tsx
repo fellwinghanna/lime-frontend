@@ -33,17 +33,24 @@ export class HelloWorld implements LimeWebComponent {
         misc: null,
     }];
 
-
-
-
+    @State()
+    private dialogIsOpen = false;
 
     @State()
     private outputLeftList: String;
     private outputMiddleList: String;
     private outputRightList: String;
+    
+    @State()
+    private dialog = <limel-dialog/>;
 
     private http: HttpService;
 
+    constructor() {
+        this.openDialog = this.openDialog.bind(this);
+        this.closeDialog = this.closeDialog.bind(this);
+    }
+ 
 
 
     public componentWillLoad() {
@@ -57,11 +64,7 @@ export class HelloWorld implements LimeWebComponent {
         console.log(limeType)
         this.http.get(`https://localhost/lime/limepkg-sprint/test/?limetype=` + limeType).then(res => {
             this.updateData(res);
-            /*         this.section = res.objects.map(el => {
-                            return this.section = { ...el };
-                        });
-                        this.createOutPut(); */
-                        console.log(res);
+            console.log(res);
         }
         );
     }
@@ -88,7 +91,7 @@ export class HelloWorld implements LimeWebComponent {
                 itemsLeftList.push(
                     (item as ListItem),
                     { separator: true })
-            } else if (element.priority == "wish" ||element.priority == "contact" || element.priority == "prospect") {
+            } else if (element.priority == "wish" || element.priority == "contact" || element.priority == "prospect") {
                 itemsMiddleList.push(
                     (item as ListItem),
                     { separator: true })
@@ -96,36 +99,65 @@ export class HelloWorld implements LimeWebComponent {
                 itemsRightList.push(
                     (item as ListItem),
                     { separator: true }
-/*                     {text: element.title,
-                    secondaryText: "Priority: " + element.priority,
-                    value: index++,
-                },
-                    { separator: true } */)
+                )
             }
         }
         )
-        this.outputLeftList = <limel-list items={itemsLeftList} />
-        this.outputMiddleList = <limel-list items={itemsMiddleList} />
-        this.outputRightList = <limel-list items={itemsRightList} />
+        this.outputLeftList = <limel-list type="selectable" onChange={this.openDialog} items={itemsLeftList} />
+        this.outputMiddleList = <limel-list type="selectable" onChange={this.openDialog} items={itemsMiddleList} />
+        this.outputRightList = <limel-list type="selectable" onChange={this.openDialog} items={itemsRightList} />
     }
 
+    private openDialog(event: CustomEvent<ListItem>) {
+        console.log("open dialog");
+        this.dialogIsOpen = true;
+        this.dialog = this.section.map(item => {
+            if (item.name === event.detail.text) {
+                return (
+                <limel-dialog open={this.dialogIsOpen} onClose={this.closeDialog}>
+                    <p>{item.name}</p>
+                    <p>{item.priority}</p>
+                    <p>{item.misc}</p>
+                    <limel-flex-container justify="end" slot="button">
+                        <limel-button primary={true} label="Close" onClick={this.closeDialog} />
+                    </limel-flex-container>
+                </limel-dialog>
+                )
+            }
+        })
+        console.log(this.dialog);
+        console.log(this.dialogIsOpen);
+        
+        return event.detail;
+        
+        
+    }
+
+    private closeDialog() {
+        console.log("Close dialog");
+        this.dialogIsOpen = false;
+        console.log(this.dialog);
+        console.log(this.dialogIsOpen);
+    }
 
     public render() {
         console.log("Render()");
+        console.log(this.dialog);
         return (
-            <limel-flex-container direction={"horizontal"} align={"stretch"} justify={"space-between"}>
+            <limel-flex-container direction={"horizontal"} align={"start"} justify={"space-between"}>
+                {this.dialog}
                 <limel-flex-container direction={"vertical"} align={"stretch"} justify={"start"}>
-                    <limel-button label="Get deals" onClick={() => this.getDataFromEndPoint("deal")}/>
+                    <limel-button outlined={true} label="Get deals" onClick={() => this.getDataFromEndPoint("deal")} />
                     <h3>Priority Urgent</h3>
                     {this.outputLeftList}
                 </limel-flex-container>
                 <limel-flex-container direction={"vertical"} align={"stretch"} justify={"space-around"}>
-                    <limel-button label="Get solution improvements" onClick={() => this.getDataFromEndPoint("solutionimprovement")}/>
+                    <limel-button outlined={true} label="Get solution improvements" onClick={() => this.getDataFromEndPoint("solutionimprovement")} />
                     <h3>Priority Wish</h3>
                     {this.outputMiddleList}
                 </limel-flex-container>
                 <limel-flex-container direction={"vertical"} align={"stretch"} justify={"end"}>
-                    <limel-button label="Get Companies" onClick={() => this.getDataFromEndPoint("company")}/>
+                    <limel-button outlined={true} label="Get Companies" onClick={() => this.getDataFromEndPoint("company")} />
                     <h3>Priority better get started</h3>
                     {this.outputRightList}
                 </limel-flex-container>
